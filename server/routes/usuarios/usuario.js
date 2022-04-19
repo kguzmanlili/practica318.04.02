@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express.Router();
-let arrJsnUsuarios = [{ _id: 1, strNombre: '', strApellido:'',strEmail:''}]
+const arrJsnUsuarios = [{ _id: 1, strNombre: '', strApellido:'',strEmail:''}]
 const path = require('path');
 const rutaDescarga = path.resolve(__dirname,'../../assets/index.html');
 
@@ -134,33 +134,41 @@ app.put('/', (req,res)=>{
 
 })
 
-app.delete('/', (req,res)=>{
-    const _idUsuario = req.query._idUsuario;   
-    if (_idUsuario){
-        const encontroUsuario = arrJsnUsuarios.find(usuario => usuario.id === idUsuario);
-        if(encontroUsuario){
-            const nuevoUsuario = {_id: _idUsuario, strNombre: req.body.strNombre, strApellido: req.body.strApellido,strEmail: req.body.strEmail}
-            const filtrarUsuario = arrJsnUsuarios.filter(usuario => usuario._id != _idUsuario)
-            arrJsnUsuarios = filtrarUsuario;
-            arrJsnUsuarios.push(actualizarUsuario);
+app.delete('/', (req,res) => {
+    const idUsu = Number(req.query.idUsu);
+    
+    if(idUsu){
+        const foundId = arrJsnUsuarios.find( id => id._id === idUsu );
+        if (foundId) {
+            const arrFilterUsu = arrJsnUsuarios.filter(idfi => idfi._id != idUsu);
+            arrJsnUsuarios = arrFilterUsu;
+
             return res.status(200).json({
-                ok:true,
-                msg: 'El usuario se actualizo de manera exitosa',
-                cont:{
-                    actualizarUsuario
+                ok: true,
+                msg: `El usuario con el id ${idUsu} se borró.`,
+                cont: {
+                    foundId
                 }
-            })
+            });
+            
+        }else{
+            return res.status(400).json({
+                ok: false,
+                msg: `El usuario con el id ${idUsu} no existe.`,
+                cont: {
+                    idUsu
+                }
+            });
         }
 
     }else{
         return res.status(400).json({
-            ok:false,
-            msg: `el usuario con el _id: ${_idUsuario}, no se encuentra registrado en la bd`,
-            cont:{
-                _idUsuario
+            ok: false,
+            msg: 'No ingresó el Identificador',
+            cont: {
+                idUsu
             }
-        })
+        });
     }
-
-})
+});
 module.exports = app;
