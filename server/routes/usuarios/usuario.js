@@ -33,6 +33,43 @@ app.get('/', (req, res)=>{
 
 })
 
+app.get('/obtenerUsuario', (req, res)=>{
+    const _idUsuario = Number (req.query._idUsuario);
+    if(!_idUsuario){
+        return res.status(400).json({
+            ok:false,
+            msg: 'No se recibio el id Usuario'
+            cont:{_idUsuario}
+        })
+    }
+
+        const obtenerUsuario = arrJsnUsuarios.find(usuario => usuario._id == _idUsuario);
+        if(!obtenerUsuario){
+            return res.status(400).json({
+                ok:false,
+                msg: 'el id Usuario  no se  encontro en la bd'
+                cont:{_idUsuario}
+            })
+        }
+        return res.status(200).json({
+            ok:true,
+           msg:'Se recibio el usuario de manera exitosa',
+          cont:{
+           _idUsuario
+          }
+    
+    
+        })
+
+    
+
+    
+    //console.log(rutaDescarga);
+
+   // return res.download('index.html',rutaDescarga);
+
+})
+
 app.post('/',(req,res)=>{
 
 
@@ -170,5 +207,5 @@ app.delete('/', (req,res) => {
             }
         });
     }
-});
+})
 module.exports = app;
