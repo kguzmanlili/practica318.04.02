@@ -6,34 +6,34 @@ const bcrypt = require('bcrypt');
 //const rutaDescarga = path.resolve(__dirname,'../../assets/index.html');
 
 
-app.get('/', (req, res)=>{
-    const arrUsuarios= arrJsnUsuarios;
+// app.get('/', (req, res)=>{
+//     const arrUsuarios= arrJsnUsuarios;
 
-    if (arrUsuarios.length > 0){
-        return res.status(200).json({
-            ok:true,
-           msg:'Se recibierón los usuarios de manera exitosa',
-          cont:{
-           arrUsuarios
-          }
+//     if (arrUsuarios.length > 0){
+//         return res.status(200).json({
+//             ok:true,
+//            msg:'Se recibierón los usuarios de manera exitosa',
+//           cont:{
+//            arrUsuarios
+//           }
     
     
-        })
+//         })
 
-    }
-    else{
-        return res.status(400).json({
-            ok:false,
-            msn: 'No se encontraron usuarios',
-            cont:{arrJsnUsuarios}
-        })
-    }
+//     }
+//     else{
+//         return res.status(400).json({
+//             ok:false,
+//             msn: 'No se encontraron usuarios',
+//             cont:{arrJsnUsuarios}
+//         })
+//     }
     
-    //console.log(rutaDescarga);
+//     //console.log(rutaDescarga);
 
-   // return res.download('index.html',rutaDescarga);
+//    // return res.download('index.html',rutaDescarga);
 
-})
+// })
 
 
 app.post('/', async (req, res) =>{
@@ -259,7 +259,7 @@ app.delete('/', (req,res) => {
 const UsuarioModel = require('../../models/usuario/usuario.model');
 
 app.get('/MongoDB', async (req, res)=>{
-    const obtenerUsuario = await UsuarioModel.find();
+    const obtenerUsuario = await UsuarioModel.find({},{strContrasena:0});
 
     if  (Object.keys(obtenerUsuario).length != 0){
         return res.status(200).json({
