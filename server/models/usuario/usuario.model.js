@@ -22,10 +22,15 @@ let SchemaUsuario = new Schema({
             type: String,
             require: [true, 'No se recibio el Email, Favor de ingresarlo']
         },
+        strNombreUsuario:{
+            type: String,
+            required:[true, 'No se recibio Nombre de usuario']
+        },
         strContrasena:{
             type: String,
             required:[true, 'No se recibio contrasena, favor de ingresarla']
         }
+        
 
 })
 

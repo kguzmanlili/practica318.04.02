@@ -42,11 +42,22 @@ app.post('/', async (req, res) =>{
     
 
     const obtenerUsuario = await UsuarioModel.find({strEmail:body.strEmail});
+    const obtenerNombreUsuario = await UsuarioModel.find({strNombreUsuario:body.strNombreUsuario});
     console.log(obtenerUsuario)
-    if(obtenerUsuario.length>0){
+    if(obtenerUsuario.length>0  ){
         return res.status(400).json({
             ok:false,
             msg:('El email ya se encuntra registrado'),
+            cont:{
+                body
+            }
+        })
+    }
+
+    if(obtenerNombreUsuario.length>0){
+        return res.status(400).json({
+            ok:false,
+            msg:('El usuario ya se encuntra registrado'),
             cont:{
                 body
             }
@@ -259,7 +270,7 @@ app.delete('/', (req,res) => {
 const UsuarioModel = require('../../models/usuario/usuario.model');
 
 app.get('/MongoDB', async (req, res)=>{
-    const obtenerUsuario = await UsuarioModel.find({},{strContrasena:0});
+    const obtenerUsuario = await UsuarioModel.find();
 
     if  (Object.keys(obtenerUsuario).length != 0){
         return res.status(200).json({
