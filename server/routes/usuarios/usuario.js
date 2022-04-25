@@ -4,6 +4,7 @@ const arrJsnUsuarios = [{ _id: 1, strNombre: '', strApellido:'',strEmail:''}]
 const path = require('path');
 const rutaDescarga = path.resolve(__dirname,'../../assets/index.html');
 
+
 app.get('/', (req, res)=>{
     const arrUsuarios= arrJsnUsuarios;
 
@@ -32,6 +33,8 @@ app.get('/', (req, res)=>{
    // return res.download('index.html',rutaDescarga);
 
 })
+
+
 
 app.get('/obtenerUsuario', (req, res)=>{
     const _idUsuario = Number (req.query._idUsuario);
@@ -207,5 +210,32 @@ app.delete('/', (req,res) => {
             }
         });
     }
+})
+
+
+
+//Implmentar usuario Model
+const UsuarioModel = require('../../models/usuario/usuario.model');
+
+app.get('/MongoDB', async (req, res)=>{
+    const obtenerUsuario = await UsuarioModel.find();
+
+    if  (Object.keys(obtenerUsuario).length != 0){
+        return res.status(200).json({
+            ok: true,
+            msg: 'Se obtuvieron los usuarios correctmente',
+            cont:{
+                obtenerUsuario
+            }
+        })
+    }
+//Regresmos status de error
+    return res.status(400).json({
+        ok:false,
+        msg: 'No se ecnontraron usuarios',
+        cont:{
+            obtenerUsusario
+        }
+    })
 })
 module.exports = app;
