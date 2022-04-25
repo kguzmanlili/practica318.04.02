@@ -38,8 +38,8 @@ app.get('/obtenerUsuario', (req, res)=>{
     if(!_idUsuario){
         return res.status(400).json({
             ok:false,
-            msg: 'No se recibio el id Usuario'
-            cont:{_idUsuario}
+            msg: 'No se recibio el id Usuario',
+            cont:{ _idUsuario }
         })
     }
 
@@ -47,7 +47,7 @@ app.get('/obtenerUsuario', (req, res)=>{
         if(!obtenerUsuario){
             return res.status(400).json({
                 ok:false,
-                msg: 'el id Usuario  no se  encontro en la bd'
+                msg: 'el id Usuario  no se  encontro en la bd',
                 cont:{_idUsuario}
             })
         }
