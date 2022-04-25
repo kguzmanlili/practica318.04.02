@@ -7,15 +7,24 @@ let SchemaUsuario = new Schema({
             type:String,
             required: [true, 'No se recibio el  Nombre, Favor de ingresarlo']
         },
+     
 
         strApellido:{
 
             type:String,
             required: [true, 'No se recibio el Apellido, Favor de ingresarlo']
         },
+        strDireccion:{
+          type:String,
+          required:[true, 'No se recibio el direccion. Favor de ingresarlo']  
+        },
         strEmail:{
             type: String,
             require: [true, 'No se recibio el Email, Favor de ingresarlo']
+        },
+        strContrasena:{
+            type: String,
+            required:[true, 'No se recibio contrasena, favor de ingresarla']
         }
 
 })

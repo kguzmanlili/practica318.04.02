@@ -73,6 +73,7 @@ app.get('/obtenerUsuario', (req, res)=>{
 
 })
 
+/*
 app.post('/',(req,res)=>{
 
 
@@ -143,7 +144,7 @@ app.post('/',(req,res)=>{
 
     //console.log(_id ,strNombre, strApellido, strEmail, 'Entro al nombre por body')
 })
-
+*/
 app.put('/', (req,res)=>{
     const _idUsuario = req.query._idUsuario;   
     if (_idUsuario){
@@ -224,6 +225,7 @@ app.get('/MongoDB', async (req, res)=>{
         return res.status(200).json({
             ok: true,
             msg: 'Se obtuvieron los usuarios correctmente',
+            count: obtenerUsuario.length,
             cont:{
                 obtenerUsuario
             }
@@ -237,5 +239,52 @@ app.get('/MongoDB', async (req, res)=>{
             obtenerUsusario
         }
     })
+})
+
+
+app.post('/', async (req, res) =>{
+    const body = req.body;
+    const obtenerUsuario = await UsuarioModel.find({strEmail:body.strEmail});
+    console.log(obtenerUsuario)
+    if(obtenerUsuario.length>0){
+        return res.status(400).json({
+            ok:false,
+            msg:('El email ya se encuntra registrado'),
+            cont:{
+                body
+            }
+        })
+    }
+    const bodyUsuario = new UsuarioModel(body);
+    const err = bodyUsuario.validateSync();
+    if(err){
+        return res.status(400).json({
+            ok:false,
+            msg:('Algunos de los campos requeridos no se enviaron'),
+            cont:{
+                err
+               
+            }
+        })
+    }
+    const usuarioRegistrado = await bodyUsuario.save();
+    return res.status(200).json({
+        ok:true,
+        msg:('El usuario se registro correctamente'),
+        cont:{
+            usuarioRegistrado
+        }
+    })
+
+   
+
+    // const productoRegistrado = await productoBody.save();
+    // return res.status(200).json({
+    //     ok:true,
+    //     msng: 'El producto se registro de manera exitosa',
+    //     cont:{
+    //         productoRegistrado 
+    //     }
+    // })
 })
 module.exports = app;
