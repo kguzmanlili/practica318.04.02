@@ -1,52 +1,55 @@
 const express = require('express');
-const ProductoModel = require('../../models/productos/producto.model');
+const EmpresaModel = require('../../models/empresa/empresa.model');
 const app = express.Router();
 
-app.get('/', async (req,res) => {
 
+
+app.get('/', async (req,res) => {
+    
     
     try {
         const _blnEstado = req.query.blnEstado == "false" ? false : true ;
-        const obtenerproductos = await ProductoModel.find({blnEstado: _blnEstado});
-
+        const obtenerempresas = await EmpresaModel.find({blnEstado: _blnEstado});
+      
         //Funcion con aggregate
 
-         const obtenerProductoConAggregate = await ProductoModel.aggregate([
+         const obtenerEmpresaConAggregate = await EmpresaModel.aggregate([
             //{$proyect: {strNombre:1, strPrecio: 1, blnEstado: 1}}, 
            // {$match: {blnEstado: blnEstado}},
             {$match:{$expr:{$eq:["$blnEstado", blnEstado]}}},
             ]);
-         console.log(obtenerProductoConAggregate)
+         console.log(obtenerEmpresaConAggregate)
         //Function con aggregate
 
-        if(!obtenerproductos.length>0) 
+        if(!obtenerempresas.length>0) 
         {
             return res.status(400).json({
                 ok: false,
-                msg:'No hay productos en la base de datos',
-                count: obtenerproductos.length,
+                msg:'No hay empresas en la base de datos',
+                count: obtenerempresas.length,
                 cont:
                 {
-                    obtenerproductos
+                    obtenerempresas
                 }
             })
         }
 
         return res.status(200).json({
             ok: true,
-            msg:'Si hay productos en la base de datos',
-            count: obtenerproductos.length,
+            msg:'Si hay empresas en la base de datos',
+            count: obtenerempresas.length,
             cont:
             {
-                obtenerproductos
+                obtenerempresas
             }
         })
     } 
     catch (error) {
+        
         return res.status(500).json(
             {
                 ok:false,
-                msg: 'Error en el servidor',
+                msg: 'Error en el servidor ',
                 cont:
                 {
                     error
@@ -61,9 +64,9 @@ app.post('/', async (req,res) =>{
     
     try {
         const body = req.body;
-        const productoBody = new ProductoModel(body);
-        const err = productoBody.validateSync();
-
+        const empresaBody = new EmpresaModel(body);
+        const err = empresaBody.validateSync();
+        console.log("hola")
         if (err)
         {
             return res.status(400).json({
@@ -76,27 +79,27 @@ app.post('/', async (req,res) =>{
             })
         }
 
-        const obtenerProducto = await ProductoModel.findOne({strNombre:body.strNombre},{strNombre:1});
+        const obtenerEmpresa = await EmpresaModel.findOne({strNombre:body.strNombre},{strNombre:1});
         
-        if (obtenerProducto)
+        if (obtenerEmpresa)
             {
                 return res.status(400).json(
                     {
                         ok:false,
-                        msg: 'Ya se encuentra un producto con ese nombre',
+                        msg: 'Ya se encuentra un empresa con ese nombre',
                         cont:
                         {
-                           obtenerProducto
+                           obtenerEmpresa
                         }
                     }) 
 
             }
 
-        const registradoP = await productoBody.save();
+        const registradoP = await empresaBody.save();
 
         return res.status(200).json({
             ok: true,
-            msg:'El producto se registro correctamente',
+            msg:'La empresa se registro correctamente',
             cont:
             {
                 registradoP
@@ -118,57 +121,56 @@ app.post('/', async (req,res) =>{
    
 })
 
-
 app.put('/', async (req,res) =>{
 
     try {
-        const _idProducto = req.query._idProducto;
+        const _idEmpresa = req.query._idEmpresa;
 
         //validamos que se envie un id, o que el id no tenga la longitud correcta
-        if (!_idProducto || _idProducto.length !=24)
+        if (!_idEmpresa || _idEmpresa.length !=24)
         {
             return res.status(400).json(
                 {
                     ok:false,
                     //utilizamos un operador ternarrio para validar cual de las 2 condiciones es la que se esta cumpliendo
-                    msg: _idProducto ? 'El id no es valido, se requiere un id de almenos 24 caracteres' : 'No se recibio un producto',
+                    msg: _idEmpresa ? 'El id no es valido, se requiere un id de almenos 24 caracteres' : 'No se recibio un producto',
                     cont:
                     {
-                        _idProducto
+                        _idEmpresa
                     }
                 }) 
         }
 
-        const encontroProducto = await ProductoModel.findOne({_id: _idProducto, blnEstado:true});
+        const encontroEmpresa = await EmpresaModel.findOne({_id: _idEmpresa, blnEstado:true});
         //console.log(encontoProducto);
 
-        if (!encontroProducto)
+        if (!encontroEmpresa)
         {
             return res.status(400).json(
                 {
                     ok:false,
-                    msg: 'No se encuentra registrado el producto',
+                    msg: 'No se encuentra registrado la empresa',
                     cont:
                     {
-                        _idProducto
+                        _idEmpresa
                     }
                 }) 
 
         }
 
-        const encontroNombreProducto = await ProductoModel.findOne({strNombre: req.body.strNombre, _id:{$ne: _idProducto}},{strNombre:1, strDescripcion:1});
+        const encontroNombreEmpresa = await EmpresaModel.findOne({strNombre: req.body.strNombre, _id:{$ne: _idEmpresa}},{strNombre:1, strDescripcion:1});
 
         //console.log(encontroNombreUsuario);
 
-        if (encontroNombreProducto)
+        if (encontroNombreEmpresa)
         {
             return res.status(400).json(
                 {
                     ok:false,
-                    msg: 'El nombre del producto ya se encuentra registrado',
+                    msg: 'El nombre de la empresa ya se encuentra registrado',
                     cont:
                     {
-                        encontroNombreProducto
+                        encontroNombreEmpresa
                     }
                 }) 
 
@@ -190,15 +192,15 @@ app.put('/', async (req,res) =>{
         // upsertedId: null,
         // upsertedCount: 0,
         // matchedCount: 1
-        const actualizarProducto = await ProductoModel.findByIdAndUpdate(_idProducto, { $set:{ ...req.body}}, {new :true});
+        const actualizarEmpresa = await EmpresaModel.findByIdAndUpdate(_idEmpresa, { $set:{ ...req.body}}, {new :true});
         //console.log(actualizarProducto);
 
-        if (!actualizarProducto)
+        if (!actualizarEmpresa)
         {
             return res.status(400).json(
                 {
                     ok:false,
-                    msg: 'No se logro actualizar el producto',
+                    msg: 'No se logro actualizar la empresa',
                     cont:
                     {
                         ...req.body
@@ -210,11 +212,11 @@ app.put('/', async (req,res) =>{
         return res.status(200).json(
             {
                 ok:true,
-                msg: 'El producto se actualizo de manera existosa',
+                msg: 'La empresa se actualizo de manera existosa',
                 cont:
                 {
-                    productoAnterior: encontroProducto,
-                    productoActual: actualizarProducto  //req.body
+                    EmpresaAnterior: encontroEmpresa,
+                    EmpresaActual: actualizarEmpresa  //req.body
                 }
             })
 
@@ -238,39 +240,39 @@ app.put('/', async (req,res) =>{
 
 })
 
-//los datos se envian preferentemente por query o params
+
 app.delete('/', async (req,res) =>{
     
     try {
         //identificar el elemento a eliminar
-        const _idProducto = req.query._idProducto;
+        const _idEmpresa= req.query._idEmpresa;
         const _blnEstado = req.query.blnEstado == "false" ? false : true ;
         //validamos que se envie un id, o que el id no tenga la longitud correcta
-        if (!_idProducto || _idProducto.length !=24)
+        if (!_idEmpresa || _idEmpresa.length !=24)
         {
             return res.status(400).json(
                 {
                     ok:false,
                     //utilizamos un operador ternarrio para validar cual de las 2 condiciones es la que se esta cumpliendo
-                    msg: _idProducto ? 'El id no es valido, se requiere un id de almenos 24 caracteres' : 'No se recibio un producto',
+                    msg: _idEmpresa ? 'El id no es valido, se requiere un id de almenos 24 caracteres' : 'No se recibio Empresa',
                     cont:
                     {
-                        _idProducto
+                        _idEmpresa
                     }
                 }) 
         }
 
-        const encontroProducto = await ProductoModel.findOne({_id: _idProducto, blnEstado:true});
+        const encontroEmpresa = await EmpresaModel.findOne({_id: _idEmpresa, blnEstado:true});
         
-        if (!encontroProducto)
+        if (!encontroEmpresa)
             {
                 return res.status(400).json(
                     {
                         ok:false,
-                        msg: 'No se encuentra registrado el producto',
+                        msg: 'No se encuentra registrado la empresa',
                         cont:
                         {
-                            _idProducto: _idProducto
+                            _idEmpresa: _idEmpresa
                         }
                     }) 
 
@@ -280,9 +282,9 @@ app.delete('/', async (req,res) =>{
         //const eliminarProducto= await ProductoModel.findOneAndDelete({_id: _idProducto});
 
         //Esta funcion solo cambia el estado del producto
-        const eliminarProducto= await ProductoModel.findOneAndUpdate({_id: _idProducto},{$set:{blnEstado:_blnEstado}},{new:true});
+        const eliminarEmpresa= await EmpresaModel.findOneAndUpdate({_id: _idEmpresa},{$set:{blnEstado:_blnEstado}},{new:true});
 
-        if (!eliminarProducto)
+        if (!eliminarEmpresa)
             {
                 return res.status(400).json(
                     {
@@ -299,10 +301,10 @@ app.delete('/', async (req,res) =>{
             return res.status(200).json(
                 {
                     ok:true,
-                    msg: _blnEstado == true ? 'Se activo el usuario de manera existosa' : 'El usuario se desactivo de manera exitosa' ,
+                    msg: _blnEstado == true ? 'Se activo la empresa de manera existosa' : 'La empresa se desactivo de manera exitosa' ,
                     cont:
                     {
-                        productoEliminado: eliminarProducto  //req.body
+                        empresaEliminado: eliminarEmpresa  //req.body
                     }
                 })    
     } 
@@ -318,7 +320,4 @@ app.delete('/', async (req,res) =>{
             })
     }
 })
-
-
-
 module.exports = app;
