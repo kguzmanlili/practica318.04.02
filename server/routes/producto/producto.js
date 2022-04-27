@@ -1,5 +1,5 @@
 const express = require('express');
-const ProductoModel = require('../../models/producto/producto.model');
+const ProductoModel = require('../../models/productos/producto.model');
 const app = express.Router();
 
 // let arrJsnProd = [];

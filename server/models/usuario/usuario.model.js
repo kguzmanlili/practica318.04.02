@@ -1,9 +1,11 @@
-const mongoose = require('mongoose');
+var mongoose = require('mongoose')
+var Schema = mongoose.Schema
 
-let SchemaUsuario = mongoose.Schema({
+
+let SchemaUsuario = new Schema({
     blnEstado:{
         type: Boolean,
-        default: true
+        default: true,
     },
     strNombre:{
         type: String,
