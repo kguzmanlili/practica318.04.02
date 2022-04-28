@@ -3,6 +3,7 @@ var Schema = mongoose.Schema
 
 
 let SchemaEmpresa = new Schema({
+  
     blnEstado:{
         type: Boolean,
         default: true,

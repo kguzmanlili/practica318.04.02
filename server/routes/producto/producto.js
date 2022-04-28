@@ -2,323 +2,210 @@ const express = require('express');
 const ProductoModel = require('../../models/productos/producto.model');
 const app = express.Router();
 
-app.get('/', async (req,res) => {
-
-    
+app.get('/', async (req, res) => {
     try {
-        const _blnEstado = req.query.blnEstado == "false" ? false : true ;
-        const obtenerproductos = await ProductoModel.find({blnEstado: _blnEstado});
+        const blnEstado = req.query.blnEstado == "false" ? false : true;
+        const obtenerProductos = await ProductoModel.find({ blnEstado: blnEstado });
 
-        //Funcion con aggregate
+        //funcion con aggregate
 
-         const obtenerProductoConAggregate = await ProductoModel.aggregate([
-            //{$proyect: {strNombre:1, strPrecio: 1, blnEstado: 1}}, 
-           // {$match: {blnEstado: blnEstado}},
-            {$match:{$expr:{$eq:["$blnEstado", blnEstado]}}},
-            ]);
-         console.log(obtenerProductoConAggregate)
-        //Function con aggregate
+        const obtenerProductosConAggregate = await ProductoModel.aggregate([
+            { $match: { blnEstado: blnEstado } },
+        ]);
 
-        if(!obtenerproductos.length>0) 
-        {
+        //funcion con aggregate
+
+        if (obtenerProductos.length == 0) {
             return res.status(400).json({
                 ok: false,
-                msg:'No hay productos en la base de datos',
-                count: obtenerproductos.length,
-                cont:
-                {
-                    obtenerproductos
+                msg: 'No se encontrarón productos en la base de datos',
+                cont: {
+                    obtenerProductos,
                 }
             })
         }
-
         return res.status(200).json({
             ok: true,
-            msg:'Si hay productos en la base de datos',
-            count: obtenerproductos.length,
-            cont:
-            {
-                obtenerproductos
+            msg: 'Se obtuvierón los productos de manera exitosa',
+            count: obtenerProductos.length,
+            cont: {
+                obtenerProductosConAggregate
             }
         })
-    } 
-    catch (error) {
-        return res.status(500).json(
-            {
-                ok:false,
-                msg: 'Error en el servidor',
-                cont:
-                {
-                    error
-                }
-            })    
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error en el servidor',
+            cont: {
+                error
+            }
+        })
     }
-
-});
-
-
-app.post('/', async (req,res) =>{
-    
+})
+app.post('/', async (req, res) => {
     try {
         const body = req.body;
         const productoBody = new ProductoModel(body);
         const err = productoBody.validateSync();
-
-        if (err)
-        {
+        if (err) {
             return res.status(400).json({
                 ok: false,
-                msg:'No se recibio algun campo favor de validar',
-                cont:
-                {
+                msg: 'No se recibio uno o mas campos favor de validar',
+                cont: {
                     err
                 }
             })
         }
-
-        const obtenerProducto = await ProductoModel.findOne({strNombre:body.strNombre},{strNombre:1});
-        
-        if (obtenerProducto)
-            {
-                return res.status(400).json(
-                    {
-                        ok:false,
-                        msg: 'Ya se encuentra un producto con ese nombre',
-                        cont:
-                        {
-                           obtenerProducto
-                        }
-                    }) 
-
-            }
-
-        const registradoP = await productoBody.save();
-
+        const encontroProducto = await ProductoModel.findOne({ strNombre: body.strNombre }, { strNombre: 1 });
+        if (encontroProducto) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'El producto ya se encuentra registrado en la base de datos',
+                cont: {
+                    encontroProducto
+                }
+            })
+        }
+        const productoRegistrado = await productoBody.save();
         return res.status(200).json({
             ok: true,
-            msg:'El producto se registro correctamente',
-            cont:
-            {
-                registradoP
+            msg: 'El producto se registro de manera exitosa',
+            cont: {
+                productoRegistrado
             }
         })
-    } 
-    catch (error) {
-        return res.status(500).json(
-            {
-                ok:false,
-                msg: 'Error en el servidor',
-                cont:
-                {
-                    error
-                }
-            })
-    }
-    
-   
-})
-
-
-app.put('/', async (req,res) =>{
-
-    try {
-        const _idProducto = req.query._idProducto;
-
-        //validamos que se envie un id, o que el id no tenga la longitud correcta
-        if (!_idProducto || _idProducto.length !=24)
-        {
-            return res.status(400).json(
-                {
-                    ok:false,
-                    //utilizamos un operador ternarrio para validar cual de las 2 condiciones es la que se esta cumpliendo
-                    msg: _idProducto ? 'El id no es valido, se requiere un id de almenos 24 caracteres' : 'No se recibio un producto',
-                    cont:
-                    {
-                        _idProducto
-                    }
-                }) 
-        }
-
-        const encontroProducto = await ProductoModel.findOne({_id: _idProducto, blnEstado:true});
-        //console.log(encontoProducto);
-
-        if (!encontroProducto)
-        {
-            return res.status(400).json(
-                {
-                    ok:false,
-                    msg: 'No se encuentra registrado el producto',
-                    cont:
-                    {
-                        _idProducto
-                    }
-                }) 
-
-        }
-
-        const encontroNombreProducto = await ProductoModel.findOne({strNombre: req.body.strNombre, _id:{$ne: _idProducto}},{strNombre:1, strDescripcion:1});
-
-        //console.log(encontroNombreUsuario);
-
-        if (encontroNombreProducto)
-        {
-            return res.status(400).json(
-                {
-                    ok:false,
-                    msg: 'El nombre del producto ya se encuentra registrado',
-                    cont:
-                    {
-                        encontroNombreProducto
-                    }
-                }) 
-
-        }
-
-        //solo regresa estadstica delo que realizo
-        // se puede realizar el update por cualquier campo
-        //const actualizarProducto = await ProductoModel.updateOne({_id: _idProducto}, { $set:{ ...req.body}});
-        // acknowledged: true,
-        // modifiedCount: 1,
-        // upsertedId: null,
-        // upsertedCount: 0,
-        // matchedCount: 1
-
-        //se realiza solo  por el id 
-        //regresa la informacion de lo que modifico
-        // acknowledged: true,
-        // modifiedCount: 1,
-        // upsertedId: null,
-        // upsertedCount: 0,
-        // matchedCount: 1
-        const actualizarProducto = await ProductoModel.findByIdAndUpdate(_idProducto, { $set:{ ...req.body}}, {new :true});
-        //console.log(actualizarProducto);
-
-        if (!actualizarProducto)
-        {
-            return res.status(400).json(
-                {
-                    ok:false,
-                    msg: 'No se logro actualizar el producto',
-                    cont:
-                    {
-                        ...req.body
-                    }
-                }) 
-
-        }
-
-        return res.status(200).json(
-            {
-                ok:true,
-                msg: 'El producto se actualizo de manera existosa',
-                cont:
-                {
-                    productoAnterior: encontroProducto,
-                    productoActual: actualizarProducto  //req.body
-                }
-            })
-
-        
-    } 
-    catch (error) {
-        return res.status(500).json(
-            {
-                ok:false,
-                msg: 'Error en el servidor',
-                cont:
-                {
-                    error
-                }
-            })
-    }
-
-    
-    
-
-
-})
-
-//los datos se envian preferentemente por query o params
-app.delete('/', async (req,res) =>{
-    
-    try {
-        //identificar el elemento a eliminar
-        const _idProducto = req.query._idProducto;
-        const _blnEstado = req.query.blnEstado == "false" ? false : true ;
-        //validamos que se envie un id, o que el id no tenga la longitud correcta
-        if (!_idProducto || _idProducto.length !=24)
-        {
-            return res.status(400).json(
-                {
-                    ok:false,
-                    //utilizamos un operador ternarrio para validar cual de las 2 condiciones es la que se esta cumpliendo
-                    msg: _idProducto ? 'El id no es valido, se requiere un id de almenos 24 caracteres' : 'No se recibio un producto',
-                    cont:
-                    {
-                        _idProducto
-                    }
-                }) 
-        }
-
-        const encontroProducto = await ProductoModel.findOne({_id: _idProducto, blnEstado:true});
-        
-        if (!encontroProducto)
-            {
-                return res.status(400).json(
-                    {
-                        ok:false,
-                        msg: 'No se encuentra registrado el producto',
-                        cont:
-                        {
-                            _idProducto: _idProducto
-                        }
-                    }) 
-
+    } catch (error) {
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error en el servidor',
+            cont: {
+                error
             }
+        })
+    }
 
-        //Este elimina de manera definitva elproducto
-        //const eliminarProducto= await ProductoModel.findOneAndDelete({_id: _idProducto});
 
+})
+app.put('/', async (req, res) => {
+    try {
+        const _idProducto = req.query._idProducto;
+        if (!_idProducto || _idProducto.length != 24) {
+            return res.status(400).json({
+                ok: false,
+                msg: _idProducto ? 'El identificador no es valido se requiere un id de 24 caractéres' : 'No se recibio el identificador',
+                cont: {
+                    _idProducto
+                }
+            })
+        }
+        const encontroProducto = await ProductoModel.findOne({ _id: _idProducto, blnEstado: true });
+        if (!encontroProducto) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'El producto no se encuentra registrado',
+                cont: {
+                    _idProducto
+                }
+            })
+        }
+        const encontroNombreProducto = await ProductoModel.findOne({ strNombre: req.body.strNombre, _id: { $ne: _idProducto } }, { strNombre: 1 })
+        if (encontroNombreProducto) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'El nombre del producto ya se encuentra registrado',
+                cont: {
+                    encontroNombreProducto
+                }
+            })
+        }
+        // const actualizarProducto = await ProductoModel.updateOne({ _id: _idProducto }, { $set: { ...req.body } })
+        const actualizarProducto = await ProductoModel.findByIdAndUpdate(_idProducto, { $set: { ...req.body } }, { new: true });
+        if (!actualizarProducto) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'El producto no se logro actualizar',
+                cont: {
+                    ...req.body
+                }
+            })
+        }
+        return res.status(200).json({
+            ok: true,
+            msg: 'El producto se actualizo de manera exitosa',
+            cont: {
+                productoAnterior: encontroProducto,
+                productoActual: actualizarProducto
+            }
+        })
+    } catch (error) {
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error en el servidor',
+            cont: {
+                error
+            }
+        })
+    }
+
+})
+app.delete('/', async (req, res) => {
+    try {
+        const _idProducto = req.query._idProducto;
+        const blnEstado = req.query.blnEstado == "false" ? false : true
+        if (!_idProducto || _idProducto.length != 24) {
+            return res.status(400).json({
+                ok: false,
+                msg: _idProducto ? 'El identificador de producto es invalido' : 'No se recibio un identificador de producto',
+                cont: {
+                    _idProducto
+                }
+            })
+        }
+        const encontrarProducto = await ProductoModel.findOne({ _id: _idProducto, blnEstado: true });
+        if (!encontrarProducto) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'El identificador del producto no se encuentra en la base de datos',
+                cont: {
+                    _idProducto: _idProducto
+                }
+            })
+        }
+        // Esta funcion elimina de manera definitiva el producto
+        // const eliminarProducto = await ProductoModel.findOneAndDelete({ _id: _idProducto });
         //Esta funcion solo cambia el estado del producto
-        const eliminarProducto= await ProductoModel.findOneAndUpdate({_id: _idProducto},{$set:{blnEstado:_blnEstado}},{new:true});
-
-        if (!eliminarProducto)
-            {
-                return res.status(400).json(
-                    {
-                        ok:false,
-                        msg: 'No se realiza ninguna modificacion' ,
-                        cont:
-                        {
-                            ...req.body
-                        }
-                    }) 
-
+        const desactivarProducto = await ProductoModel.findOneAndUpdate({ _id: _idProducto }, { $set: { blnEstado: blnEstado } }, { new: true })
+        // if (!desactivarProducto) {
+        //     return res.status(400).json({
+        //         ok: false,
+        //         msg: blnEstado == true ? 'El producto no se logro activar' : 'El producto no se logro desactivar', 
+        //         cont: {
+        //             desactivarProducto
+        //         }
+        //     })
+        // }
+        return res.status(200).json({
+            ok: true,
+            msg: blnEstado == true ? 'Se activo el producto de manera exitosa' : 'Se desactivo el producto de manera exitosa',
+            cont: {
+                desactivarProducto
             }
-
-            return res.status(200).json(
-                {
-                    ok:true,
-                    msg: _blnEstado == true ? 'Se activo el usuario de manera existosa' : 'El usuario se desactivo de manera exitosa' ,
-                    cont:
-                    {
-                        productoEliminado: eliminarProducto  //req.body
-                    }
-                })    
-    } 
-    catch (error) {
-        return res.status(500).json(
-            {
-                ok:false,
-                msg: 'Error en el servidor',
-                cont:
-                {
-                    error
-                }
-            })
+        })
+    } catch (error) {
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error en el servidor',
+            cont: {
+                error
+            }
+        })
     }
 })
-
+//La agregación en MongoDB sigue una estructura tipo "pipeline":
+// diferentes etapas, donde cada una toma la salida de la anterior.
+// Los elementos de la "tubería" se incluyen en un array y se ejecutarán por orden.
+// Cada elemento puede repetirse y el orden puede variar.
 
 
 module.exports = app;

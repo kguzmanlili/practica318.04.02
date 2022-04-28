@@ -7,6 +7,10 @@ let SchemaUsuario = new Schema({
         type: Boolean,
         default: true,
     },
+    idEmpresa:{
+        type: mongoose.Types.ObjectId,
+        required:[true,'No se recibió el campo IdEmpresa, favor de ingresarlo']
+    },
     strNombre:{
         type: String,
         required:[true,'No se recibió el strNombre, favor de ingresarlo']
