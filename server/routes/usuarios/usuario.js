@@ -2,17 +2,45 @@ const express = require('express');
 const UsuarioModel = require('../../models/usuario/usuario.model')
 const app = express.Router();
 const bcrypt = require('bcrypt');
-const usuarioModel = require('../../models/usuario/usuario.model');
+const{ verificarAcceso } = require('../../middlewares/permisos');
+
+
 
 // const path = require('path');
 // const rutaDescarga = path.resolve(__dirname, '../../assets/index.html');
-app.get('/', async (req, res) => {
+app.get('/', verificarAcceso, async (req, res) => {
     const blnEstado = req.query.blnEstado == "false" ? false : true;
-    const obtenerUsuarios = await UsuarioModel.find({ blnEstado: blnEstado }, {});
+    const obtenerUsuarios = await UsuarioModel.aggregate(
+        [
+            {
+                $match:{blnEstado: blnEstado}
+            },
+            {$lookup: 
+                {
+                    from:"empresas",
+                    localField:"idEmpresa",
+                    foreignField:"_id",
+                    as: "empresa"
+                }
+            }
+            ,
+            {$project:
+                {
+                    strNombre:1,
+                    strApellido:1,
+                    strDireccion:1,
+                    strEmail:1,
+                    empresa: {
+                        $arrayElemAt:['$empresa',0]
+                    }
+                }
+            }
+        ]);
+    //const obtenerUsuarios = await UsuarioModel.find({ blnEstado: blnEstado }, {});
     if (obtenerUsuarios.length < 1) {
         return res.status(400).json({
             ok: false,
-            msg: 'No se encontrarón productos en la base de datos',
+            msg: 'No se encontrarón usuarios en la base de datos',
             cont: {
                 obtenerUsuarios
             }
@@ -27,9 +55,10 @@ app.get('/', async (req, res) => {
         }
     })
 })
-app.post('/', async (req, res) => {
+app.post('/',verificarAcceso, async (req, res) => {
     // existe ? (lo que pasa si existe) : (no existe);
-    const body = { ...req.body, strContrasena: req.body.strContrasena ? bcrypt.hashSync(req.body.strContrasena, 10) : undefined };
+    
+    const body = { ...req.body, strPassword: req.body.strContrasena ? bcrypt.hashSync(req.body.strContrasena, 10) : undefined };
     const bodyUsuario = new UsuarioModel(body);
     // const encontraridEmpresa = await UsuarioModel.findOne({ idEmpresa: body.idEmpresa });
     const encontrarEmailUsuario = await UsuarioModel.findOne({ strEmail: body.strEmail });
@@ -83,7 +112,7 @@ app.post('/', async (req, res) => {
     })
 })
 
-app.put('/', async (req, res) => {
+app.put('/',verificarAcceso, async (req, res) => {
 
     try {
         const _idUsuario = req.query._idUsuario;
@@ -181,7 +210,7 @@ app.put('/', async (req, res) => {
     }
 })
 
-app.delete('/', async (req, res) => {
+app.delete('/',verificarAcceso, async (req, res) => {
     try {
         const _idUsuario = req.query._idUsuario
         const blnEstado = req.query.blnEstado == "false" ? false : true
@@ -195,7 +224,7 @@ app.delete('/', async (req, res) => {
             })
         }
         const modificarEstadoUsuario = await UsuarioModel.findOneAndUpdate({ _id: _idUsuario }, { $set: { blnEstado: blnEstado } }, { new: true })
-
+   
         return res.status(200).json({
             ok: true,
             msg: blnEstado == true ? 'Se activo el usuario de manera exitosa' : 'Se desactivo el usuario de manera exitosa',

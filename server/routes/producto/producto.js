@@ -1,8 +1,9 @@
 const express = require('express');
 const ProductoModel = require('../../models/productos/producto.model');
 const app = express.Router();
+const{verificarAcceso} = require('../../middlewares/permisos');
 
-app.get('/', async (req, res) => {
+app.get('/',verificarAcceso, async (req, res) => {
     try {
         const blnEstado = req.query.blnEstado == "false" ? false : true;
         const obtenerProductos = await ProductoModel.find({ blnEstado: blnEstado });
@@ -43,7 +44,7 @@ app.get('/', async (req, res) => {
         })
     }
 })
-app.post('/', async (req, res) => {
+app.post('/', verificarAcceso, async (req, res) => {
     try {
         const body = req.body;
         const productoBody = new ProductoModel(body);
@@ -87,7 +88,7 @@ app.post('/', async (req, res) => {
 
 
 })
-app.put('/', async (req, res) => {
+app.put('/',verificarAcceso, async (req, res) => {
     try {
         const _idProducto = req.query._idProducto;
         if (!_idProducto || _idProducto.length != 24) {
@@ -149,7 +150,7 @@ app.put('/', async (req, res) => {
     }
 
 })
-app.delete('/', async (req, res) => {
+app.delete('/',verificarAcceso, async (req, res) => {
     try {
         const _idProducto = req.query._idProducto;
         const blnEstado = req.query.blnEstado == "false" ? false : true

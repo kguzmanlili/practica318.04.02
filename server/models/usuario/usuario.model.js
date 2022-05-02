@@ -7,10 +7,7 @@ let SchemaUsuario = new Schema({
         type: Boolean,
         default: true,
     },
-    idEmpresa:{
-        type: mongoose.Types.ObjectId,
-        required:[true,'No se recibió el campo IdEmpresa, favor de ingresarlo']
-    },
+   
     strNombre:{
         type: String,
         required:[true,'No se recibió el strNombre, favor de ingresarlo']
@@ -37,7 +34,12 @@ let SchemaUsuario = new Schema({
     strPassword:{
         type:String,
         required:[true,'No se recibó el strPassword, favor de ingresarlo']
-    }
+    },
+
+    idEmpresa:{
+        type: mongoose.Types.ObjectId,
+        required:[true,'No se recibió el campo IdEmpresa, favor de ingresarlo']
+    },
 })
 
 module.exports = mongoose.model('usuario', SchemaUsuario);

@@ -10,7 +10,7 @@ app.get('/', async (req,res) => {
     try {
         const _blnEstado = req.query.blnEstado == "false" ? false : true ;
         const obtenerempresas = await EmpresaModel.find({blnEstado: _blnEstado});
-      
+       
         //Funcion con aggregate
 
          const obtenerEmpresaConAggregate = await EmpresaModel.aggregate([
@@ -18,6 +18,7 @@ app.get('/', async (req,res) => {
            // {$match: {blnEstado: blnEstado}},
             {$match:{$expr:{$eq:["$blnEstado", blnEstado]}}},
             ]);
+            console.log ("hola")
          console.log(obtenerEmpresaConAggregate)
         //Function con aggregate
 
@@ -133,7 +134,7 @@ app.put('/', async (req,res) =>{
                 {
                     ok:false,
                     //utilizamos un operador ternarrio para validar cual de las 2 condiciones es la que se esta cumpliendo
-                    msg: _idEmpresa ? 'El id no es valido, se requiere un id de almenos 24 caracteres' : 'No se recibio un producto',
+                    msg: _idEmpresa ? 'El id no es valido, se requiere un id de almenos 24 caracteres' : 'No se recibio empresa',
                     cont:
                     {
                         _idEmpresa

@@ -20,4 +20,4 @@ mongoose.connect(process.env.URLDB,(err, resp)=>{
 
 app.listen(process.env.PORT, ()=> {
     console.log('[Node]'.green,' esta corriendo en el puerto', (process.env.PORT).yellow);
-})
+});
